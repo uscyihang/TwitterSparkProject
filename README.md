@@ -56,7 +56,7 @@ In this project, we built a real-time data pipeline using Spark Streaming and Ka
 * Kafka act as the central hub for real-time streams of data, receive streaming data from twitter and persist the data for a specific time period.
 * Spark is listening to Kafka topics, waiting for processing those streamings by using complex algorithms such as high-level functions like map, filter, updateStateByKey and countByValues.
 * Processed data be pushed out to new Kafka topics.
-* Front-end receive data from Kafka topics and visualize the realtime data to interactive charts.
+* Front-end receives data from Kafka topics and visualizes the real-time data to interactive charts.
 
 
 ### Architecture
