@@ -43,7 +43,6 @@ In this project, we built a real-time data pipeline using Spark Streaming and Ka
 
 
 ### Built With
-This section should list any major frameworks that you built your project using. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
 * [Tweepy](https://www.tweepy.org/)
 * [Apache Kafka](https://kafka.apache.org/)
 * [Apache Spark](https://spark.apache.org/) 
