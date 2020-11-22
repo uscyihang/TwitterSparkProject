@@ -119,8 +119,8 @@ node dashboard.js
 <!-- RESULTS -->
 ## Results
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-![product-screenshot]
+Demo
+![demo]
 
 
 <!-- FUTURE WORK -->
@@ -142,5 +142,6 @@ Use this space to show useful examples of how a project can be used. Additional 
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [logo]: images/logo.png
+[demo]: images/demo.gif
 [architecture]: images/img.png
 [product-screenshot]: images/screenshot.png
