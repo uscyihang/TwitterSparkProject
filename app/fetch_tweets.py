@@ -1,8 +1,21 @@
 import tweepy
 import json
-import sys
 from kafka import KafkaProducer
 from configparser import ConfigParser
+from app import auth_keys
+
+
+class TwitterAuthProvider():
+
+    def getAuth(self):
+        consumer_key = auth_keys.CONSUMER_KEY
+        consumer_secret = auth_keys.CONSUMER_SECRET
+        access_token = auth_keys.ACCESS_TOKEN
+        access_secret = auth_keys.ACCESS_TOKEN_SECRET
+        print(consumer_key)
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_secret)
+        return auth
 
 
 class Listener(tweepy.StreamListener):
@@ -13,9 +26,20 @@ class Listener(tweepy.StreamListener):
         self.count = 0
 
     def on_data(self, raw_data):
-        self.process_data(raw_data)
+        try:
+            self.process_data(raw_data)
+            return True
+        except BaseException as e:
+            print("Error for on-data: %s" % str(e))
+        return True
 
     def process_data(self, raw_data):
+        if self.topic_name == "hashtag":
+            self.collect_hashtags(raw_data)
+        elif self.topic_name == "mention":
+            self.collect_mentions(raw_data)
+
+    def collect_hashtags(self, raw_data):
         data = json.loads(raw_data)
         if "text" in data:
             text = data["text"]
@@ -26,6 +50,9 @@ class Listener(tweepy.StreamListener):
                 self.count += 1
                 if self.count % 100 == 0:
                     print("Number of tweets sent = ", self.count)
+
+    def collect_mentions(self, raw_data):
+        print(raw_data)
 
     def on_error(self, status_code):
         if status_code == 420:
@@ -42,8 +69,10 @@ class StreamTweets():
     def start(self, location, language, track_keywords):
         self.stream.filter(languages=language,
                            track=track_keywords, is_async=True)
-        # self.stream.filter(languages=language,
-        #                    track=track_keywords, locations=location)
+
+    def track_by_location(self, location, language, track_keywords):
+        self.stream.filter(languages=language,
+                           track=track_keywords, locations=location)
 
 
 if __name__ == "__main__":
@@ -66,16 +95,9 @@ if __name__ == "__main__":
     producer = KafkaProducer(bootstrap_servers=[bootstrap_server],
                              value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
-    print(config['Resources']['app_topic_name'])
-    listener = Listener(producer, "twitter")
+    listener = Listener(producer, config['Resources']['app_topic_name_hashtag'])
 
-    consumer_key = config['API_details']['consumer_key']
-    consumer_secret = config['API_details']['consumer_secret']
-    access_token = config['API_details']['access_token']
-    access_secret = config['API_details']['access_secret']
-
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_secret)
+    auth = TwitterAuthProvider().getAuth()
 
     stream = StreamTweets(auth, listener)
 
@@ -85,8 +107,9 @@ if __name__ == "__main__":
     track_keywords = config['API_param']['track_keywords'].split(' ')
     # track_keywords = "Trump"
     stream.start(location, language, track_keywords)
+
     # second
-    track_keywords_2 = config['API_param']['track_keywords2'].split(' ')
-    listener2 = Listener(producer, "twitter2")
-    stream2 = StreamTweets(auth, listener2)
-    stream2.start(location, language, track_keywords_2)
+    # track_keywords_2 = config['API_param']['track_keywords2'].split(' ')
+    # listener2 = Listener(producer, "twitter2")
+    # stream2 = StreamTweets(auth, listener2)
+    # stream2.start(location, language, track_keywords_2)
