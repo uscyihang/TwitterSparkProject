@@ -12,6 +12,7 @@ from configparser import ConfigParser
 def set_global_topic_name(config):
     # Set topic name as global variable
     globals()['dashboard_topic_name'] = config['Resources']['dashboard_topic_name']
+    globals()['dashboard_topic_name_mention'] = config['Resources']['dashboard_topic_name_mention']
 
 
 def sum_all_tags(new_values, last_sum):
@@ -130,15 +131,18 @@ if __name__ == "__main__":
         "bootstrap.servers": bootstap_server
     }
 
+    """
+    HashTag DStream for getting input from Kafka and process.
+    """
     # Creating Dstream by taking input from Kafka
-    tweets = KafkaUtils.createDirectStream(
-        ssc, [config['Resources']['app_topic_name']], kafkaParams=kafkaParam, valueDecoder=lambda x: json.loads(x.decode('utf-8')))
+    tweets_hashtag = KafkaUtils.createDirectStream(
+        ssc, [config['Resources']['app_topic_name_hashtag']], kafkaParams=kafkaParam, valueDecoder=lambda x: json.loads(x.decode('utf-8')))
 
     # Print count of tweets in a particular batch
     # tweets.count().pprint()
 
     # Split tweets into words
-    words = tweets.map(lambda v: v[1]["text"]).flatMap(lambda t: t.split(" "))
+    words = tweets_hashtag.map(lambda v: v[1]["text"]).flatMap(lambda t: t.split(" "))
 
     # Get hashtags from tweet and create a new DStream by adding their count to previos DStream count
     hashtags = words.filter(lambda tag: len(
@@ -146,6 +150,27 @@ if __name__ == "__main__":
 
     # Process each DStream
     hashtags.foreachRDD(process_hashtags)
+
+    """
+    Mention DStream for getting input from Kafka and process.
+    """
+    # Creating Dstream by taking input from Kafka
+    tweets_mention = KafkaUtils.createDirectStream(
+        ssc, [config['Resources']['app_topic_name_mention']], kafkaParams=kafkaParam,
+        valueDecoder=lambda x: json.loads(x.decode('utf-8')))
+
+    # Print count of tweets in a particular batch
+    # tweets.count().pprint()
+
+    # Split tweets into words
+    words = tweets_mention.map(lambda v: v[1]["text"]).flatMap(lambda t: t.split(" "))
+
+    # Get hashtags from tweet and create a new DStream by adding their count to previos DStream count
+    mentions = words.filter(lambda tag: len(
+        tag) > 2 and '@' == tag[0]).countByValue().updateStateByKey(sum_all_tags)
+
+    # Process each DStream
+    mentions.foreachRDD(process_hashtags)
 
     # Start Streaming Context
     ssc.start()

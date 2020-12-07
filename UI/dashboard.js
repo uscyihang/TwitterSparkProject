@@ -7,9 +7,9 @@ var port = 8081;
 var Consumer = kafka.Consumer,
  client = new kafka.KafkaClient("localhost:9092"),
  consumer = new Consumer(
- client, [ { topic: 'processedtweets', partition: 0 } ], { autoCommit: false });
+ client, [ { topic: 'processedtweets2', partition: 0 } ], { autoCommit: false });
 
-app.get('/', function(req, res){
+app.get('/tst', function(req, res){
     res.sendfile('index.html');
 });
 

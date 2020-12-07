@@ -1,5 +1,5 @@
-<div id='container' style="height:100%;width:100%;"></div>
-<div id='container2' style="height:100%;width:100%;margin-top: auto"></div>
+<div id='container' style="height:50%;width:100%;"></div>
+<div id='container2' style="height:50%;width:100%;margin-top: auto;"></div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="http://code.highcharts.com/highcharts.js"></script>
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
@@ -11,7 +11,6 @@
         var counts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         var mentions = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
         var mcounts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        var msocket = io();
         Highcharts.setOptions({
             global: {
                 useUTC: false
@@ -21,7 +20,7 @@
         chart = new Highcharts.Chart({
             chart : {
                 renderTo: 'container',
-                type: 'bar'
+                type: 'column'
             },
             title : {
                 text: 'Tweet Analysis'
@@ -89,7 +88,7 @@
                 type: 'bar'
             },
             title : {
-                text: 'Tweet Analysis'
+                text: '  '
             },
             subtitle : {
                 text: 'Top 10 Mentions'
@@ -152,29 +151,21 @@
             var data = JSON.parse(message);
             hashtags.length = 0;
             counts.length = 0;
+            mentions.length = 0;
+            mcounts.length = 0;
             for(hashtag in data){
-                hashtags.push(hashtag);
-                counts.push(data[hashtag]);
-            console.log(chart.series);
-            console.log(chart.series.data);
-            console.log(chart.series[0].data);
-            chart.series[0].update({data:counts})
-            chart.redraw();
-            }
-        });
-
-        msocket.on('messagem', function(message){
-            var data = JSON.parse(message);
-            hashtags.length = 0;
-            counts.length = 0;
-            for(hashtag in data){
-                hashtags.push(hashtag);
-                counts.push(data[hashtag]);
-            console.log(chart.series);
-            console.log(chart.series.data);
-            console.log(chart.series[0].data);
-            chartMention.series[0].update({data:counts})
-            chartMention.redraw();
+                if(hashtag[0] === '@') {
+                    mentions.push(hashtag);
+                    mcounts.push(data[hashtag]);
+                    chartMention.series[0].update({data:mcounts})
+                    chartMention.redraw();
+                }
+                else {
+                    hashtags.push(hashtag);
+                    counts.push(data[hashtag]);
+                    chart.series[0].update({data:counts})
+                    chart.redraw();
+                }
             }
         });
     });

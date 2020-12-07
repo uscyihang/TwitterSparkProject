@@ -87,13 +87,6 @@ if __name__ == "__main__":
     config.read("../conf/config.conf")
     bootstrap_server = config['Kafka_param']['bootstrap.servers']
 
-    # bootstrap_servers=[‘localhost:9092’] : sets the host and port the producer
-    # should contact to bootstrap initial cluster metadata. It is not necessary to set this here,
-    # since the default is localhost:9092.
-    #
-    # value_serializer=lambda x: dumps(x).encode(‘utf-8’): function of how the data
-    # should be serialized before sending to the broker. Here, we convert the data to
-    # a json file and encode it to utf-8.
     producer = KafkaProducer(bootstrap_servers=[bootstrap_server],
                              value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
