@@ -12,7 +12,7 @@ class TwitterAuthProvider():
         consumer_secret = auth_keys.CONSUMER_SECRET
         access_token = auth_keys.ACCESS_TOKEN
         access_secret = auth_keys.ACCESS_TOKEN_SECRET
-        print(consumer_key)
+        # print(consumer_key)
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_secret)
         return auth
@@ -24,6 +24,7 @@ class Listener(tweepy.StreamListener):
         self.producer = kafka_producer
         self.topic_name = topic_name
         self.count = 0
+        self.m_count = 0
 
     def on_data(self, raw_data):
         try:
@@ -43,16 +44,21 @@ class Listener(tweepy.StreamListener):
         data = json.loads(raw_data)
         if "text" in data:
             text = data["text"]
-        # if "extended_tweet" in data:
-        #     text = data["extended_tweet"]["full_text"]
             if '#' in text:
                 self.producer.send(self.topic_name, value={"text": text})
                 self.count += 1
                 if self.count % 100 == 0:
-                    print("Number of tweets sent = ", self.count)
+                    print("Number of tweets with hashtag = ", self.count)
 
     def collect_mentions(self, raw_data):
-        print(raw_data)
+        data = json.loads(raw_data)
+        if "text" in data:
+            text = data["text"]
+            if '@' in text:
+                self.producer.send(self.topic_name, value={"text": text})
+                self.m_count += 1
+                if self.m_count % 100 == 0:
+                    print("Number of tweets with mentions = ", self.m_count)
 
     def on_error(self, status_code):
         if status_code == 420:
@@ -66,7 +72,7 @@ class StreamTweets():
     def __init__(self, auth, listener):
         self.stream = tweepy.Stream(auth, listener)
 
-    def start(self, location, language, track_keywords):
+    def start(self, language, track_keywords):
         self.stream.filter(languages=language,
                            track=track_keywords, is_async=True)
 
@@ -79,11 +85,7 @@ if __name__ == "__main__":
 
     config = ConfigParser()
     config.read("../conf/config.conf")
-    # config.read("..\conf\config.conf")
-
-    # bootstap_server = config['Kafka_param']['bootstrap.servers']
-
-    bootstrap_server = "localhost:9092"
+    bootstrap_server = config['Kafka_param']['bootstrap.servers']
 
     # bootstrap_servers=[‘localhost:9092’] : sets the host and port the producer
     # should contact to bootstrap initial cluster metadata. It is not necessary to set this here,
@@ -95,21 +97,28 @@ if __name__ == "__main__":
     producer = KafkaProducer(bootstrap_servers=[bootstrap_server],
                              value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
-    listener = Listener(producer, config['Resources']['app_topic_name_hashtag'])
-
     auth = TwitterAuthProvider().getAuth()
 
-    stream = StreamTweets(auth, listener)
-
-    # Converting string to float to get cordinates
+    # config search params
     location = [float(x) for x in config['API_param']['location'].split(',')]
     language = config['API_param']['language'].split(' ')
     track_keywords = config['API_param']['track_keywords'].split(' ')
-    # track_keywords = "Trump"
-    stream.start(location, language, track_keywords)
 
-    # second
-    # track_keywords_2 = config['API_param']['track_keywords2'].split(' ')
-    # listener2 = Listener(producer, "twitter2")
-    # stream2 = StreamTweets(auth, listener2)
-    # stream2.start(location, language, track_keywords_2)
+    """
+    Hashtag tweets steaming
+    """
+    hashtag_listener = Listener(producer, config['Resources']['app_topic_name_hashtag'])
+
+    hashtag_stream = StreamTweets(auth, hashtag_listener)
+
+    hashtag_stream.start(language, track_keywords)
+
+    """
+    Hashtag tweets steaming
+    """
+    mention_listener = Listener(producer, config['Resources']['app_topic_name_mention'])
+
+    mention_stream = StreamTweets(auth, mention_listener)
+
+    mention_stream.start(language, track_keywords)
+

@@ -1,4 +1,5 @@
 <div id='container' style="height:100%;width:100%;"></div>
+<div id='container2' style="height:100%;width:100%;margin-top: auto"></div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="http://code.highcharts.com/highcharts.js"></script>
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
@@ -8,6 +9,9 @@
         var socket = io();
         var hashtags = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
         var counts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        var mentions = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
+        var mcounts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        var msocket = io();
         Highcharts.setOptions({
             global: {
                 useUTC: false
@@ -20,10 +24,10 @@
                 type: 'bar'
             },
             title : {
-                text: 'Tweet Analysis'   
+                text: 'Tweet Analysis'
             },
             subtitle : {
-                text: 'Top 10 hashtags'  
+                text: 'Top 10 hashtags'
             },
             xAxis : {
                 categories: hashtags,
@@ -62,7 +66,7 @@
                 y: 100,
                 floating: true,
                 borderWidth: 1,
-            
+
                 backgroundColor: (
                     (Highcharts.theme && Highcharts.theme.legendBackgroundColor)
                     || '#FFFFFF'),
@@ -79,6 +83,71 @@
             ]
         });
 
+        chartMention = new Highcharts.Chart({
+            chart : {
+                renderTo: 'container2',
+                type: 'bar'
+            },
+            title : {
+                text: 'Tweet Analysis'
+            },
+            subtitle : {
+                text: 'Top 10 Mentions'
+            },
+            xAxis : {
+                categories: mentions,
+                title: {
+                    text: null
+                }
+            },
+            yAxis : {
+                min: 0,
+                title: {
+                    text: 'Mentions count',
+                    align: 'high'
+                },
+                labels: {
+                    overflow: 'justify'
+                }
+            },
+            tooltip : {
+                valueSuffix: ' Numbers'
+            },
+            plotOptions : {
+                bar: {
+                    dataLabels: {
+                        enabled: true
+                    }
+                },
+                series: {
+                    stacking: 'normal'
+                }
+            },
+            legend : {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                x: -40,
+                y: 100,
+                floating: true,
+                borderWidth: 1,
+
+                backgroundColor: (
+                    (Highcharts.theme && Highcharts.theme.legendBackgroundColor)
+                    || '#FFFFFF'),
+                shadow: true
+            },
+            credits : {
+                enabled: false
+            },
+            series : [
+            {
+                name: 'Count',
+                data: mcounts
+            }
+            ]
+        });
+
         socket.on('message', function(message){
             var data = JSON.parse(message);
             hashtags.length = 0;
@@ -91,6 +160,21 @@
             console.log(chart.series[0].data);
             chart.series[0].update({data:counts})
             chart.redraw();
+            }
+        });
+
+        msocket.on('messagem', function(message){
+            var data = JSON.parse(message);
+            hashtags.length = 0;
+            counts.length = 0;
+            for(hashtag in data){
+                hashtags.push(hashtag);
+                counts.push(data[hashtag]);
+            console.log(chart.series);
+            console.log(chart.series.data);
+            console.log(chart.series[0].data);
+            chartMention.series[0].update({data:counts})
+            chartMention.redraw();
             }
         });
     });
