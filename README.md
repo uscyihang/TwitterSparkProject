@@ -25,7 +25,7 @@
 * [Getting Started](#getting-started)
   * [Installation](#installation)
   * [How to run](#how-to-run)
-* [Results](#results)
+* [Data Visualization](#data-visualization)
 * [Acknowledgements](#acknowledgements)
 
 
@@ -55,9 +55,9 @@ In this project, we built a real-time data pipeline using Spark Streaming and Ka
 
 
 ### Architecture
-
-<img src="images/architecture.png" alt="architecture" style="zoom:28%;" />
-
+<p align="center">
+<img src="images/architecture.png" alt="architecture" width="40%" />
+</p>
 
 
 ### Why Spark
@@ -68,7 +68,9 @@ Spark, a fast and general-purpose engine for *large-scale data processing*, is w
 
 At a high level, a Spark application consists two parts: a *driver program* that runs the user's `main` function and executes various *parallel operations* on a cluster. To better realize the concepts, the main abstraction Spark provides is called *resilient distributed dataset* (RDD).
 
-<img src="images/sparkapp.png" alt="sparkapp" style="zoom: 18%;" />
+<p align="center">
+<img src="images/sparkapp.png" alt="sparkapp" width="65%" />
+</p>
 
 #### RDD and DStreams
 
@@ -149,7 +151,9 @@ By the power of DataFrame and Dataset, Spark introduces [Structured Streaming](h
 
 The basic concept of Structured Streaming is, a query on the input will generate the “Result Table”. Every trigger interval (say, every 1 second), new rows get appended to the Input Table, which eventually updates the Result Table. Whenever the result table gets updated, we would want to write the changed result rows to an external sink.
 
-<img src="images/ssmodel.png" alt="ssmodel" style="zoom: 55%;" />
+<p align="center">
+<img src="images/ssmodel.png" alt="ssmodel" />
+</p>
 
 **Integration with Kafka**
 
@@ -211,13 +215,14 @@ Batch: 7
 Basically, RDD, DataFrame and Dataset are three APIs Spark provided. We can convert a RDD to a DataFrame, or convert a DataFrame to a RDD. However, RDD offers low-level functionality and control on a set of Java objects, while DataFrame and Dataset offer high-level domain-specific operations with structured data. In [High Performance Spark](http://shop.oreilly.com/product/0636920046967.do) Chapter 3. DataFrames, Datasets, and Spark SQL, we can see some performance comparation between Dataframe/Dataset and RDD.
 
 Space Efficiency:
-
-<img src="images/space.png" alt="space" style="zoom:45%;" />
+<p align="center">
+<img src="images/spaceef.png" alt="space" width="65%" />
+</p>
 
 Time Efficiency:
-
-<img src="images/time.png" alt="time" style="zoom:80%;" />
-
+<p align="center">
+<img src="images/time.png" alt="time" width="65%" />
+</p>
 To sum up, because DataFrame and Dataset APIs are built on top of the Spark SQL engine, it could save more space, and executes at a superior speed. 
 
 <!-- GETTING STARTED -->
@@ -272,7 +277,7 @@ node dashboard.js
 
 
 <!-- RESULTS -->
-## Results
+## Data Visualization
 
 ![demo](images/demo.gif)
 
