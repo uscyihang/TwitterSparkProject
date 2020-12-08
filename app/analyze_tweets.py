@@ -86,7 +86,7 @@ if __name__ == "__main__":
     config = ConfigParser()
 
     #Read conf file
-    config.read("../conf/config.conf")
+    config.read("conf/config.conf")
 
     # Set topic name
     set_global_topic_name(config)

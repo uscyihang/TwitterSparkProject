@@ -250,7 +250,7 @@ npm install <dependencies>
 ### How to run
 
 1. Enter your API keys in `app/auth_keys.py`
-2. Start the Zookeeper Servive
+2. Go to kafka inventory, start the Zookeeper Servive
 ```sh
 bin/zookeeper-server-start.sh config/zookeeper.properties
 ```
@@ -262,16 +262,19 @@ bin/kafka-server-start.sh config/server.properties
 ```sh
 $ bin/kafka-topics.sh --create --topic <topic_name> --bootstrap-server localhost:9092
 ```
-5. Run `fetch_tweets.py` to fetch data from twitter API
+5. Back to the root of this project, run `fetch_tweets.py` to fetch data from twitter API
 ```sh
-python fetch_tweets.py 
+export PYTHONPATH=$PYTHONPATH:.
+python app/fetch_tweets.py 
 ```
 6. Run `analyze_tweets.py` to analyze data by Spark
 ```sh
-python analyze_tweets.py 
+python app/analyze_tweets.py 
 ```
 7. Start npm server
 ```sh
+cd UI
+npm install .
 node dashboard.js
 ```
 

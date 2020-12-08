@@ -1,5 +1,6 @@
 import tweepy
 import json
+import sys
 from kafka import KafkaProducer
 from configparser import ConfigParser
 from app import auth_keys
@@ -84,7 +85,7 @@ class StreamTweets():
 if __name__ == "__main__":
 
     config = ConfigParser()
-    config.read("../conf/config.conf")
+    config.read("conf/config.conf")
     bootstrap_server = config['Kafka_param']['bootstrap.servers']
 
     producer = KafkaProducer(bootstrap_servers=[bootstrap_server],
@@ -96,6 +97,12 @@ if __name__ == "__main__":
     location = [float(x) for x in config['API_param']['location'].split(',')]
     language = config['API_param']['language'].split(' ')
     track_keywords = config['API_param']['track_keywords'].split(' ')
+
+    if len(sys.argv) > 1:
+        track_keywords = []
+        for i in range(1, len(sys.argv)):
+            track_keywords.append(sys.argv[i])
+
 
     """
     Hashtag tweets steaming
@@ -114,4 +121,5 @@ if __name__ == "__main__":
     mention_stream = StreamTweets(auth, mention_listener)
 
     mention_stream.start(language, track_keywords)
+
 
