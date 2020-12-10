@@ -13,7 +13,7 @@ class TwitterAuthProvider():
         consumer_secret = auth_keys.CONSUMER_SECRET
         access_token = auth_keys.ACCESS_TOKEN
         access_secret = auth_keys.ACCESS_TOKEN_SECRET
-        # print(consumer_key)
+
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_secret)
         return auth
@@ -64,7 +64,6 @@ class Listener(tweepy.StreamListener):
     def on_error(self, status_code):
         if status_code == 420:
             print("420 Error!")
-            # returning False in on_error disconnects the stream
             return False
 
 
@@ -94,7 +93,6 @@ if __name__ == "__main__":
     auth = TwitterAuthProvider().getAuth()
 
     # config search params
-    location = [float(x) for x in config['API_param']['location'].split(',')]
     language = config['API_param']['language'].split(' ')
     track_keywords = config['API_param']['track_keywords'].split(' ')
 
