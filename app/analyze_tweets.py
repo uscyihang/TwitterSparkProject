@@ -56,7 +56,7 @@ def send_to_kafka(hashtagCountsDataFrame, producer):
     producer.send(globals()['dashboard_topic_name'], value=top_rows)
 
 
-def defineKafkaParam(config):
+def define_kafka_param(config):
     kafkaParam = {
         "zookeeper.connect": config['Kafka_param']['zookeeper.connect'],
         "group.id": config['Kafka_param']['group.id'],
@@ -67,10 +67,22 @@ def defineKafkaParam(config):
     return kafkaParam
 
 
+def create_tweets_dstream(ssc, input_msg, kafka_param, mark):
+    tweets_stream = KafkaUtils.createDirectStream(
+        ssc, input_msg, kafkaParams=kafka_param,
+        valueDecoder=lambda x: json.loads(x.decode('utf-8')))
+
+    return tweets_stream.map(lambda v: v[1]["text"]) \
+        .flatMap(lambda t: t.split(" ")) \
+        .filter(lambda tag: len(tag) > 2 and mark == tag[0]) \
+        .countByValue() \
+        .updateStateByKey(sum_all_tags)
+
+
 def start():
     config = ConfigParser()
 
-    config.read("../conf/config.conf")
+    config.read("conf/config.conf")
 
     set_global_topic_name(config)
 
@@ -90,7 +102,7 @@ def start():
 
     ssc.checkpoint("checkpointTwitterApp")
 
-    kafka_param = defineKafkaParam(config)
+    kafka_param = define_kafka_param(config)
 
     producer = KafkaProducer(bootstrap_servers=['localhost:9092'],
                              value_serializer=lambda v: json.dumps(v).encode('utf-8'))
@@ -98,31 +110,12 @@ def start():
     """
     HashTag DStream for getting input from Kafka and process.
     """
-    # Creating Dstream by taking input from Kafka
-    tweets_hashtag = KafkaUtils.createDirectStream(
-        ssc, [config['Resources']['app_topic_name_hashtag']], kafkaParams=kafka_param,
-        valueDecoder=lambda x: json.loads(x.decode('utf-8')))
-
-    tweets_hashtag.map(lambda v: v[1]["text"]) \
-        .flatMap(lambda t: t.split(" ")) \
-        .filter(lambda tag: len(tag) > 2 and '#' == tag[0]) \
-        .countByValue() \
-        .updateStateByKey(sum_all_tags) \
+    create_tweets_dstream(ssc, [config['Resources']['app_topic_name_hashtag']], kafka_param, "#")\
         .foreachRDD(lambda x: process_tweets(x, producer))
-
     """
     Mention DStream for getting input from Kafka and process.
     """
-    # Creating Dstream by taking input from Kafka
-    tweets_mention = KafkaUtils.createDirectStream(
-        ssc, [config['Resources']['app_topic_name_mention']], kafkaParams=kafka_param,
-        valueDecoder=lambda x: json.loads(x.decode('utf-8')))
-
-    tweets_mention.map(lambda v: v[1]["text"]) \
-        .flatMap(lambda t: t.split(" ")) \
-        .filter(lambda tag: len(tag) > 2 and '@' == tag[0]) \
-        .countByValue() \
-        .updateStateByKey(sum_all_tags) \
+    create_tweets_dstream(ssc, [config['Resources']['app_topic_name_mention']], kafka_param, "@")\
         .foreachRDD(lambda x: process_tweets(x, producer))
 
     # Start Streaming Context
