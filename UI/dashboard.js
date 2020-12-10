@@ -13,15 +13,7 @@ app.get('/tst', function(req, res){
     res.sendfile('index.html');
 });
 
-io = io.on('connection', function(socket){
-    console.log('a user connected');
-    socket.on('disconnect', function(){
-        console.log('user disconnected');
-    });
-});
-
 consumer = consumer.on('message', function(message) {
-    // console.log(message.value);
     io.emit("message", message.value);
 });
 

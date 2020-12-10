@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
 
     """
-    Hashtag tweets steaming
+    Hashtag tweets streaming
     """
     hashtag_listener = Listener(producer, config['Resources']['app_topic_name_hashtag'])
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     hashtag_stream.start(language, track_keywords)
 
     """
-    Hashtag tweets steaming
+    Hashtag tweets streaming
     """
     mention_listener = Listener(producer, config['Resources']['app_topic_name_mention'])
 
